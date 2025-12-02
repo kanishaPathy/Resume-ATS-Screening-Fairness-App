@@ -90,16 +90,21 @@ class TabTransformer(nn.Module):
 def load_artifacts():
     import os
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # pages folder
-    ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..")) # project root
+    # ALWAYS gives the repo root on Streamlit Cloud
+    ROOT_DIR = os.getcwd()
 
     MODEL_DIR = os.path.join(ROOT_DIR, "models")
     DATA_DIR = os.path.join(ROOT_DIR, "data")
 
+    print("ROOT_DIR:", ROOT_DIR)
+    print("MODEL_DIR:", MODEL_DIR)
+    print("DATA_DIR:", DATA_DIR)
+    print("FILES IN DATA:", os.listdir(DATA_DIR))
+
     scaler = joblib.load(os.path.join(MODEL_DIR, "TabTransformer_Scaler.pkl"))
     cat_maps = joblib.load(os.path.join(MODEL_DIR, "TabTransformer_Cat_Maps.pkl"))
 
-    with open(os.path.join(MODEL_DIR, "TabTransformer_Hyperparams.json"), "r") as f:
+    with open(os.path.join(MODEL_DIR, "TabTransformer_Hyperparams.json")) as f:
         best_params = json.load(f)
 
     cat_cardinalities = [len(cat_maps[col]) for col in CATEGORICAL_FEATURES]
@@ -114,8 +119,10 @@ def load_artifacts():
         num_classes=2
     ).to(DEVICE)
 
-    state = torch.load(os.path.join(MODEL_DIR, "TabTransformer_Final_Model.pt"),
-                       map_location=DEVICE)
+    state = torch.load(
+        os.path.join(MODEL_DIR, "TabTransformer_Final_Model.pt"),
+        map_location=DEVICE
+    )
     model.load_state_dict(state)
     model.eval()
 
@@ -125,6 +132,7 @@ def load_artifacts():
         df["word_count"] = df["clean_resume"].astype(str).apply(lambda x: len(x.split()))
 
     return model, scaler, cat_maps, cat_cardinalities, df
+
 
 model, scaler, cat_maps, cat_cardinalities, df_model = load_artifacts()
 
@@ -454,4 +462,5 @@ if submitted:
     st.pyplot(force_fig, clear_figure=True)
 
     st.success("✅ SHAP explanation generated successfully!")
+
 
