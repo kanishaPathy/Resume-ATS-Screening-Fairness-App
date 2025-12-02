@@ -11,7 +11,11 @@ st.set_page_config(layout="wide")
 st.title("📊 Resume Analytics Dashboard")
 
 # Load dataset
-df = pd.read_csv("Resume_ATS_Fairness.csv")
+ROOT_DIR = os.getcwd()
+DATA_DIR = os.path.join(ROOT_DIR, "data")
+
+df = pd.read_csv(os.path.join(DATA_DIR, "Resume_ATS_Fairness.csv"))
+
 df["label_str"] = df["y_pred"].map({0: "Weak", 1: "Strong"})
 
 # ---------------------------------------------------------
@@ -292,4 +296,5 @@ st.caption("🔍 Two-word insight: **Clear gap**")
 st.markdown("---")
 
 # End of file (NO INVALID LINES BELOW)
+
 
