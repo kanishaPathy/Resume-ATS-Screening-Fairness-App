@@ -94,11 +94,11 @@ class TabTransformer(nn.Module):
 # ---------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
-    # Use relative paths (important for GitHub/Streamlit Cloud)
-    SCALER_PATH = "TabTransformer_Scaler.pkl"
-    CATMAPS_PATH = "TabTransformer_Cat_Maps.pkl"
-    MODEL_PATH = "TabTransformer_Final_Model.pt"
-    HYPERPARAM_PATH = "TabTransformer_Hyperparams.json"
+    # Use correct relative paths for GitHub/Streamlit Cloud
+    SCALER_PATH = "models/TabTransformer_Scaler.pkl"
+    CATMAPS_PATH = "models/TabTransformer_Cat_Maps.pkl"
+    MODEL_PATH = "models/TabTransformer_Final_Model.pt"
+    HYPERPARAM_PATH = "models/TabTransformer_Hyperparams.json"
     DATA_PATH = "data/Resume_ATS_Fairness.csv"
 
     # ----------------------------
@@ -469,6 +469,7 @@ if submitted:
     st.pyplot(force_fig, clear_figure=True)
 
     st.success("✅ SHAP explanation generated successfully!")
+
 
 
 
