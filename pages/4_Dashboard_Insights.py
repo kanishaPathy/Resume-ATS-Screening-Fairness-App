@@ -6,6 +6,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import os
+
 
 st.set_page_config(layout="wide")
 st.title("📊 Resume Analytics Dashboard")
@@ -296,5 +298,6 @@ st.caption("🔍 Two-word insight: **Clear gap**")
 st.markdown("---")
 
 # End of file (NO INVALID LINES BELOW)
+
 
 
