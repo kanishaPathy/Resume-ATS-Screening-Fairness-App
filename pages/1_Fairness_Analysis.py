@@ -17,8 +17,8 @@ This page shows whether the ATS model is **fair** across:
 - Different **job categories** (IT, Finance, Aviation, etc.)
 """)
 
-# Load the saved df_test from your notebook
-df = pd.read_csv(r"C:\Users\Kanisha Pathy\Downloads\Research - Practicum\Ai-Resume\Resume_ATS_Fairness.csv")
+# Load the saved df_test from your noteboo
+df = pd.read_csv("data/Resume_ATS_Fairness.csv")
 
 st.write("### Sample of Evaluation Data")
 st.dataframe(df[["platform", "Category", "y_true", "y_pred"]].head())
@@ -114,4 +114,5 @@ plot_bar("Demographic Parity – Category", dp_cat, "P(y_pred=1)")
 
 st.markdown("**Combined Category Fairness Heatmap**")
 fairness_heatmap(sr_cat, di_cat, tpr_cat, dp_cat, "Category")
+
 
