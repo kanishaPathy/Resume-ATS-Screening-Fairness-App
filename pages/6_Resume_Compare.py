@@ -26,10 +26,24 @@ CATEGORICAL_FEATURES = ["platform", "Category"]
 # -------------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
-    scaler = joblib.load(BASE_DIR + r"\TabTransformer_Scaler.pkl")
-    cat_maps = joblib.load(BASE_DIR + r"\TabTransformer_Cat_Maps.pkl")
-    with open(BASE_DIR + r"\TabTransformer_Hyperparams.json", "r") as f:
-        best = json.load(f)
+     import os
+
+    # ALWAYS gives the repo root on Streamlit Cloud
+    ROOT_DIR = os.getcwd()
+
+    MODEL_DIR = os.path.join(ROOT_DIR, "models")
+    DATA_DIR = os.path.join(ROOT_DIR, "data")
+
+    print("ROOT_DIR:", ROOT_DIR)
+    print("MODEL_DIR:", MODEL_DIR)
+    print("DATA_DIR:", DATA_DIR)
+    print("FILES IN DATA:", os.listdir(DATA_DIR))
+
+    scaler = joblib.load(os.path.join(MODEL_DIR, "TabTransformer_Scaler.pkl"))
+    cat_maps = joblib.load(os.path.join(MODEL_DIR, "TabTransformer_Cat_Maps.pkl"))
+
+    with open(os.path.join(MODEL_DIR, "TabTransformer_Hyperparams.json")) as f:
+        best_params = json.load(f)
 
     # Build TabTransformer
     class TabTransformer(torch.nn.Module):
@@ -81,6 +95,8 @@ def load_artifacts():
     state = torch.load(BASE_DIR + r"\TabTransformer_Final_Model.pt", map_location=DEVICE)
     model.load_state_dict(state)
     model.eval()
+    df = pd.read_csv(os.path.join(DATA_DIR, "Resume_ATS_Fairness.csv"))
+
 
     return model, scaler, cat_maps
 
@@ -282,5 +298,6 @@ if run_compare:
     with colr2:
         st.subheader("Resume B Shape")
         st.plotly_chart(radar_chart("B", numB), use_container_width=True)
+
 
 
