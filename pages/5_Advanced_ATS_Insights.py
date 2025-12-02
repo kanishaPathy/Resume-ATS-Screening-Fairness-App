@@ -5,6 +5,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import os
 import plotly.express as px
 from fpdf import FPDF
 
@@ -14,7 +15,10 @@ st.title("🔥 Advanced ATS Intelligence Dashboard")
 # ---------------------------------------------------------
 # LOAD DATA
 # ---------------------------------------------------------
-df = pd.read_csv("Resume_ATS_Fairness.csv")
+ROOT_DIR = os.getcwd()
+DATA_DIR = os.path.join(ROOT_DIR, "data")
+
+df = pd.read_csv(os.path.join(DATA_DIR, "Resume_ATS_Fairness.csv"))
 df["label_str"] = df["y_pred"].map({0: "Weak", 1: "Strong"})
 
 st.success(f"📄 {len(df)} resumes loaded.")
@@ -185,5 +189,6 @@ if st.button("📥 Download ATS PDF Report"):
     )
 
 st.success("✅ Report ready!")
+
 
 
