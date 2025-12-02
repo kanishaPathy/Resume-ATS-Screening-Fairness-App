@@ -1,9 +1,3 @@
-
-
-# pages/2_Resume_Evaluation.py
-
-# pages/2_Resume_Evaluation.py
-
 import streamlit as st
 import torch
 import torch.nn as nn
@@ -94,31 +88,22 @@ class TabTransformer(nn.Module):
 # ---------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
-    # Use correct relative paths for GitHub/Streamlit Cloud
-    SCALER_PATH = "models/TabTransformer_Scaler.pkl"
-    CATMAPS_PATH = "models/TabTransformer_Cat_Maps.pkl"
-    MODEL_PATH = "models/TabTransformer_Final_Model.pt"
-    HYPERPARAM_PATH = "models/TabTransformer_Hyperparams.json"
-    DATA_PATH = "data/Resume_ATS_Fairness.csv"
+    import os
 
-    # ----------------------------
-    # Load scaler + categorical maps
-    # ----------------------------
-    scaler = joblib.load(SCALER_PATH)
-    cat_maps = joblib.load(CATMAPS_PATH)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # pages folder
+    ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..")) # project root
 
-    # ----------------------------
-    # Load Optuna hyperparameters
-    # ----------------------------
-    with open(HYPERPARAM_PATH, "r") as f:
+    MODEL_DIR = os.path.join(ROOT_DIR, "models")
+    DATA_DIR = os.path.join(ROOT_DIR, "data")
+
+    scaler = joblib.load(os.path.join(MODEL_DIR, "TabTransformer_Scaler.pkl"))
+    cat_maps = joblib.load(os.path.join(MODEL_DIR, "TabTransformer_Cat_Maps.pkl"))
+
+    with open(os.path.join(MODEL_DIR, "TabTransformer_Hyperparams.json"), "r") as f:
         best_params = json.load(f)
 
-    # Cardinalities for embedding layers
     cat_cardinalities = [len(cat_maps[col]) for col in CATEGORICAL_FEATURES]
 
-    # ----------------------------
-    # Build TabTransformer
-    # ----------------------------
     model = TabTransformer(
         num_numeric=len(NUMERIC_FEATURES),
         cat_cardinalities=cat_cardinalities,
@@ -129,25 +114,19 @@ def load_artifacts():
         num_classes=2
     ).to(DEVICE)
 
-    # Load model weights
-    state = torch.load(MODEL_PATH, map_location=DEVICE)
+    state = torch.load(os.path.join(MODEL_DIR, "TabTransformer_Final_Model.pt"),
+                       map_location=DEVICE)
     model.load_state_dict(state)
     model.eval()
 
-    # ----------------------------
-    # Load SHAP background dataset
-    # ----------------------------
-    df_model = pd.read_csv(DATA_PATH)
+    df = pd.read_csv(os.path.join(DATA_DIR, "Resume_ATS_Fairness.csv"))
 
-    # fallback word_count
-    if "word_count" not in df_model.columns:
-        df_model["word_count"] = (
-            df_model["clean_resume"]
-            .astype(str)
-            .apply(lambda x: len(x.split()))
-        )
+    if "word_count" not in df.columns:
+        df["word_count"] = df["clean_resume"].astype(str).apply(lambda x: len(x.split()))
 
-    return model, scaler, cat_maps, cat_cardinalities, df_model
+    return model, scaler, cat_maps, cat_cardinalities, df
+
+model, scaler, cat_maps, cat_cardinalities, df_model = load_artifacts()
 
 
 # ---------------------------------------------------------
@@ -469,7 +448,3 @@ if submitted:
     st.pyplot(force_fig, clear_figure=True)
 
     st.success("✅ SHAP explanation generated successfully!")
-
-
-
-
