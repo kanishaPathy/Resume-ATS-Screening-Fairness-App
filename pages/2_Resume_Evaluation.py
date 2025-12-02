@@ -94,15 +94,31 @@ class TabTransformer(nn.Module):
 # ---------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
-    scaler = "TabTransformer_Scaler.pkl"
-    cat_maps = "TabTransformer_Cat_Maps.pkl"
+    # Use relative paths (important for GitHub/Streamlit Cloud)
+    SCALER_PATH = "TabTransformer_Scaler.pkl"
+    CATMAPS_PATH = "TabTransformer_Cat_Maps.pkl"
+    MODEL_PATH = "TabTransformer_Final_Model.pt"
+    HYPERPARAM_PATH = "TabTransformer_Hyperparams.json"
+    DATA_PATH = "data/Resume_ATS_Fairness.csv"
 
+    # ----------------------------
+    # Load scaler + categorical maps
+    # ----------------------------
+    scaler = joblib.load(SCALER_PATH)
+    cat_maps = joblib.load(CATMAPS_PATH)
 
-    with open(BASE_DIR + r"\TabTransformer_Hyperparams.json", "r") as f:
+    # ----------------------------
+    # Load Optuna hyperparameters
+    # ----------------------------
+    with open(HYPERPARAM_PATH, "r") as f:
         best_params = json.load(f)
 
+    # Cardinalities for embedding layers
     cat_cardinalities = [len(cat_maps[col]) for col in CATEGORICAL_FEATURES]
 
+    # ----------------------------
+    # Build TabTransformer
+    # ----------------------------
     model = TabTransformer(
         num_numeric=len(NUMERIC_FEATURES),
         cat_cardinalities=cat_cardinalities,
@@ -113,27 +129,25 @@ def load_artifacts():
         num_classes=2
     ).to(DEVICE)
 
-    state = torch.load(
-        BASE_DIR + r"\TabTransformer_Final_Model.pt",
-        map_location=DEVICE
-    )
+    # Load model weights
+    state = torch.load(MODEL_PATH, map_location=DEVICE)
     model.load_state_dict(state)
     model.eval()
 
-    df = pd.read_csv(BASE_DIR + r"\Resume_ATS_Final.csv")
+    # ----------------------------
+    # Load SHAP background dataset
+    # ----------------------------
+    df_model = pd.read_csv(DATA_PATH)
 
-    if "word_count" not in df.columns:
-        df["word_count"] = df["clean_resume"].astype(str).apply(lambda x: len(x.split()))
-
-    if "auto_selected" in df.columns:
-        df_model = df.dropna(subset=["auto_selected"]).copy()
-    else:
-        df_model = df.copy()
+    # fallback word_count
+    if "word_count" not in df_model.columns:
+        df_model["word_count"] = (
+            df_model["clean_resume"]
+            .astype(str)
+            .apply(lambda x: len(x.split()))
+        )
 
     return model, scaler, cat_maps, cat_cardinalities, df_model
-
-
-model, scaler, cat_maps, cat_cardinalities, df_model = load_artifacts()
 
 
 # ---------------------------------------------------------
@@ -455,5 +469,6 @@ if submitted:
     st.pyplot(force_fig, clear_figure=True)
 
     st.success("✅ SHAP explanation generated successfully!")
+
 
 
