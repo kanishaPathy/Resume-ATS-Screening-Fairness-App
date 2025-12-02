@@ -48,19 +48,6 @@ def keyword_density(x):
     return sum(1 for k in KEYWORDS if k in x)
 
 df["keyword_density"] = df[resume_col].apply(keyword_density)
-
-# ---------------------------------------------------------
-# DATE SUPPORT (OPTIONAL)
-# ---------------------------------------------------------
-date_cols = [c for c in df.columns if "date" in c.lower()]
-date_col = date_cols[0] if date_cols else None
-if date_col:
-    df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
-else:
-    st.warning("⚠ No date column found – timeline analysis skipped.")
-
-st.markdown("---")
-
 # ---------------------------------------------------------
 # SECTION 1 — KEYWORD DENSITY VISUAL
 # ---------------------------------------------------------
@@ -189,6 +176,7 @@ if st.button("📥 Download ATS PDF Report"):
     )
 
 st.success("✅ Report ready!")
+
 
 
 
