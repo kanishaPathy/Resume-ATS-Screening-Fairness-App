@@ -256,6 +256,12 @@ def model_predict(x_numpy):
 # ---------------------------------------------------------
 # STREAMLIT INPUT FORM
 # ---------------------------------------------------------
+st.set_page_config(page_title="Resume Evaluation", layout="wide")
+st.title("📝 Resume Evaluation with ATS + SHAP Explainability")
+
+# Load artifacts before using cat_maps
+model, scaler, cat_maps, cat_cardinalities, df_model = load_artifacts()
+
 with st.form("resume_eval_form"):
     st.subheader("📤 Upload Resume or Paste Text")
 
@@ -448,3 +454,4 @@ if submitted:
     st.pyplot(force_fig, clear_figure=True)
 
     st.success("✅ SHAP explanation generated successfully!")
+
