@@ -95,21 +95,6 @@ st.plotly_chart(fig_ats, use_container_width=True)
 st.markdown("---")
 
 # ---------------------------------------------------------
-# SECTION 4 — TIMELINE (IF AVAILABLE)
-# ---------------------------------------------------------
-if date_col:
-    st.subheader("⏳ ATS Score Timeline")
-
-    df_t = df.dropna(subset=[date_col]).sort_values(date_col)
-    fig_time = px.line(
-        df_t, x=date_col, y="ATS_score", color="label_str",
-        title="ATS Score Trend Over Time"
-    )
-    st.plotly_chart(fig_time, use_container_width=True)
-
-st.markdown("---")
-
-# ---------------------------------------------------------
 # SECTION 5 — AI SUMMARY GENERATION
 # ---------------------------------------------------------
 st.subheader("🧠 AI-Generated Summary of Dataset")
@@ -176,6 +161,7 @@ if st.button("📥 Download ATS PDF Report"):
     )
 
 st.success("✅ Report ready!")
+
 
 
 
