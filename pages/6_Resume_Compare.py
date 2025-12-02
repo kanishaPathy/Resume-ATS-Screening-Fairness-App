@@ -86,13 +86,15 @@ def load_artifacts():
     model = TabTransformer(
         num_numeric=len(NUMERIC_FEATURES),
         cat_cardinalities=cat_cardinalities,
-        d_model=best["d_model"],
-        n_heads=best["n_heads"],
-        n_layers=best["n_layers"],
-        dropout=best["dropout"],
+        d_model=best_params["d_model"],
+        n_heads=best_params["n_heads"],
+        n_layers=best_params["n_layers"],
+        dropout=best_params["dropout"],
+        num_classes=2
     ).to(DEVICE)
 
-    state = torch.load(BASE_DIR + r"\TabTransformer_Final_Model.pt", map_location=DEVICE)
+
+    state = torch.load(os.path.join(MODEL_DIR, "TabTransformer_Final_Model.pt"),map_location=DEVICE)
     model.load_state_dict(state)
     model.eval()
     df = pd.read_csv(os.path.join(DATA_DIR, "Resume_ATS_Fairness.csv"))
@@ -298,6 +300,7 @@ if run_compare:
     with colr2:
         st.subheader("Resume B Shape")
         st.plotly_chart(radar_chart("B", numB), use_container_width=True)
+
 
 
 
