@@ -26,7 +26,7 @@ CATEGORICAL_FEATURES = ["platform", "Category"]
 # -------------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
-     import os
+    import os
 
     # ALWAYS gives the repo root on Streamlit Cloud
     ROOT_DIR = os.getcwd()
@@ -298,6 +298,7 @@ if run_compare:
     with colr2:
         st.subheader("Resume B Shape")
         st.plotly_chart(radar_chart("B", numB), use_container_width=True)
+
 
 
 
