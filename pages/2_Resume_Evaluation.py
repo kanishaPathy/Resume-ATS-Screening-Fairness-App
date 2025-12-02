@@ -94,8 +94,9 @@ class TabTransformer(nn.Module):
 # ---------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
-    scaler = joblib.load(BASE_DIR + r"\TabTransformer_Scaler.pkl")
-    cat_maps = joblib.load(BASE_DIR + r"\TabTransformer_Cat_Maps.pkl")
+    scaler = "TabTransformer_Scaler.pkl"
+    cat_maps = "TabTransformer_Cat_Maps.pkl"
+
 
     with open(BASE_DIR + r"\TabTransformer_Hyperparams.json", "r") as f:
         best_params = json.load(f)
@@ -454,4 +455,5 @@ if submitted:
     st.pyplot(force_fig, clear_figure=True)
 
     st.success("✅ SHAP explanation generated successfully!")
+
 
