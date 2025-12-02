@@ -13,3 +13,6 @@ python-docx
 docx2txt
 PyPDF2
 fpdf
+statsmodels
+
+
