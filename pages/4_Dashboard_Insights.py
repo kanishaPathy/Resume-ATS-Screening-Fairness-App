@@ -12,7 +12,7 @@ st.set_page_config(layout="wide")
 st.title("📊 Resume Analytics Dashboard")
 
 # Load dataset
-df = pd.read_csv("Resume_ATS_Fairness.csv")
+df = pd.read_csv("data/Resume_ATS_Fairness.csv")
 df["label_str"] = df["y_pred"].map({0: "Weak", 1: "Strong"})
 
 # ---------------------------------------------------------
