@@ -2,22 +2,17 @@
 
 # pages/4_Dashboard_Insights.py
 
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import os
-
 
 st.set_page_config(layout="wide")
 st.title("📊 Resume Analytics Dashboard")
 
 # Load dataset
-ROOT_DIR = os.getcwd()
-DATA_DIR = os.path.join(ROOT_DIR, "data")
-
-df = pd.read_csv(os.path.join(DATA_DIR, "Resume_ATS_Fairness.csv"))
-
+df = pd.read_csv("Resume_ATS_Fairness.csv")
 df["label_str"] = df["y_pred"].map({0: "Weak", 1: "Strong"})
 
 # ---------------------------------------------------------
@@ -58,7 +53,7 @@ with c1:
         color_continuous_scale="Blues"
     )
     st.plotly_chart(fig1, use_container_width=True)
-    st.caption("🔍 Two-word insight: **High volume**")
+    st.caption("🔍 insights: **High volume**")
 
 with c2:
     fig2 = px.pie(
@@ -69,7 +64,7 @@ with c2:
         color_discrete_sequence=px.colors.sequential.RdBu
     )
     st.plotly_chart(fig2, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Naukri leads**")
+    st.caption("🔍 insights: **Naukri leads**")
 
 st.markdown("---")
 
@@ -90,7 +85,7 @@ with left:
         points="all"
     )
     st.plotly_chart(fig3, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Skills matter**")
+    st.caption("🔍 insights: **Skills matter**")
 
 with right:
     fig4 = px.box(
@@ -102,7 +97,7 @@ with right:
         points="all"
     )
     st.plotly_chart(fig4, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Higher education**")
+    st.caption("🔍 insights: **Higher education**")
 
 st.markdown("---")
 
@@ -125,7 +120,7 @@ with colA:
         height=650
     )
     st.plotly_chart(fig5, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Strong cluster**")
+    st.caption("🔍 insights: **Strong cluster**")
 
 with colB:
     fig6 = px.scatter(
@@ -138,7 +133,7 @@ with colB:
         title="Bubble Chart: Skills vs ATS vs Word Count"
     )
     st.plotly_chart(fig6, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Long resumes**")
+    st.caption("🔍 insights: **Long resumes**")
 
 st.markdown("---")
 
@@ -160,7 +155,7 @@ with colX:
         color_continuous_scale="Viridis"
     )
     st.plotly_chart(fig7, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Skill–ATS**")
+    st.caption("🔍 insights: **Skill–ATS**")
 
 with colY:
     fig8 = px.violin(
@@ -172,7 +167,7 @@ with colY:
         title="ATS Score Across Job Categories"
     )
     st.plotly_chart(fig8, use_container_width=True)
-    st.caption("🔍 Two-word insight: **IT dominates**")
+    st.caption("🔍 insights: **IT dominates**")
 # ---------------------------------------------------------
 # SECTION 5 — ATS SCORE DEEP ANALYSIS
 # ---------------------------------------------------------
@@ -195,7 +190,7 @@ with ats_row1:
         color_discrete_map={"Strong": "green", "Weak": "red"}
     )
     st.plotly_chart(fig_ats1, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Score clusters**")
+    st.caption("🔍 insights: **Score clusters**")
 
 # -------------------------------------
 # 2️⃣ ATS Score by Platform
@@ -212,7 +207,7 @@ with ats_row2:
         color_continuous_scale="Plasma"
     )
     st.plotly_chart(fig_ats2, use_container_width=True)
-    st.caption("🔍 Two-word insight: **Naukri optimized**")
+    st.caption("🔍 insights: **Naukri optimized**")
 
 st.markdown("---")
 
@@ -231,7 +226,7 @@ fig_ats3 = px.violin(
     color_discrete_map={"Strong": "green", "Weak": "red"}
 )
 st.plotly_chart(fig_ats3, use_container_width=True)
-st.caption("🔍 Two-word insight: **IT leads**")
+st.caption("🔍 insights: **IT leads**")
 
 st.markdown("---")
 
@@ -250,7 +245,7 @@ fig_ats4 = px.scatter(
     title="ATS Score vs Word Count (With Trendline)"
 )
 st.plotly_chart(fig_ats4, use_container_width=True)
-st.caption("🔍 Two-word insight: **Length matters**")
+st.caption("🔍 insights: **Length matters**")
 
 st.markdown("---")
 
@@ -271,7 +266,7 @@ fig_ats5 = px.density_heatmap(
     color_continuous_scale="Viridis"
 )
 st.plotly_chart(fig_ats5, use_container_width=True)
-st.caption("🔍 Two-word insight: **Skill boost**")
+st.caption("🔍 insights: **Skill boost**")
 
 st.markdown("---")
 
@@ -293,11 +288,125 @@ fig_ats6 = px.bar(
 )
 fig_ats6.update_traces(texttemplate="%{text:.2f}")
 st.plotly_chart(fig_ats6, use_container_width=True)
-st.caption("🔍 Two-word insight: **Clear gap**")
+st.caption("🔍 insights: **Clear gap**")
 
 st.markdown("---")
 
-# End of file (NO INVALID LINES BELOW)
+# ---------------------------------------------------------
+# SECTION 6 — PLATFORM FAIRNESS & SELECTION ANALYTICS
+# ---------------------------------------------------------
+
+st.markdown("## ⚖️ Platform Selection & Fairness Insights")
+
+sel1, sel2 = st.columns(2)
+
+# 1️⃣ Selection rate by platform
+df_selection = df.groupby("platform")["y_pred"].mean().reset_index()
+df_selection.columns = ["platform", "selection_rate"]
+
+with sel1:
+    fig_sel1 = px.bar(
+        df_selection,
+        x="platform",
+        y="selection_rate",
+        title="Selection Rate by Platform",
+        color="selection_rate",
+        color_continuous_scale="Greens"
+    )
+    st.plotly_chart(fig_sel1, use_container_width=True)
+    best_platform = df_selection.loc[df_selection["selection_rate"].idxmax(), "platform"]
+    st.success(f"✔ Highest Selection Rate: **{best_platform}**")
+
+# 2️⃣ Rejection rate by platform
+df_rejection = df.groupby("platform")["y_pred"].apply(lambda x: 1 - x.mean()).reset_index()
+df_rejection.columns = ["platform", "rejection_rate"]
+
+with sel2:
+    fig_sel2 = px.bar(
+        df_rejection,
+        x="platform",
+        y="rejection_rate",
+        title="Rejection Rate by Platform",
+        color="rejection_rate",
+        color_continuous_scale="Reds"
+    )
+    st.plotly_chart(fig_sel2, use_container_width=True)
+    worst_platform = df_rejection.loc[df_rejection["rejection_rate"].idxmax(), "platform"]
+    st.error(f"❌ Highest Rejection: **{worst_platform}**")
+
+st.markdown("---")
+
+# ---------------------------------------------------------
+# SECTION 7 — ATS SCORE & FAIRNESS VIEW
+# ---------------------------------------------------------
+
+st.subheader("🏆 ATS Score & Ranking by Platform")
+
+df_ats_rank = df.groupby("platform")["ATS_score"].mean().reset_index()
+
+fig_rank = px.bar(
+    df_ats_rank,
+    x="platform",
+    y="ATS_score",
+    color="ATS_score",
+    title="Average ATS Score per Platform",
+    color_continuous_scale="RdYlGn"  
+)
+st.plotly_chart(fig_rank, use_container_width=True)
+
+
+best_ats_platform = df_ats_rank.loc[df_ats_rank["ATS_score"].idxmax(), "platform"]
+st.info(f"🏆 Platform with Highest ATS Score: **{best_ats_platform}**")
+
+st.markdown("---")
+
+# ---------------------------------------------------------
+# SECTION 8 — Selection-to-Rejection Ratio Chart
+# ---------------------------------------------------------
+
+st.subheader("📌 Selection-to-Rejection Ratio per Platform")
+
+ratio_df = pd.merge(df_selection, df_rejection, on="platform")
+ratio_df["ratio"] = ratio_df["selection_rate"] / ratio_df["rejection_rate"]
+
+fig_ratio = px.bar(
+    ratio_df,
+    x="platform",
+    y="ratio",
+    title="Selection / Rejection Ratio per Platform",
+    color="ratio",
+    color_continuous_scale="Turbo"
+)
+
+st.plotly_chart(fig_ratio, use_container_width=True)
+st.caption("🔍 Higher ratio indicates fair advantage.")
+
+st.markdown("---")
+
+# ---------------------------------------------------------
+# SECTION 9 — Platform Fairness Matrix
+# ---------------------------------------------------------
+
+st.subheader("📌 Fairness Evaluation Dashboard")
+
+fairness_matrix = pd.DataFrame({
+    "Platform": df_selection["platform"],
+    "Selection Rate": df_selection["selection_rate"],
+    "Rejection Rate": df_rejection["rejection_rate"],
+    "Avg ATS Score": df_ats_rank["ATS_score"],
+    "Sel/Rej Ratio": ratio_df["ratio"]
+})
+
+fig_matrix = px.imshow(
+    fairness_matrix.set_index("Platform"),
+    text_auto=True,
+    title="Fairness Heatmap Across Platforms",
+    color_continuous_scale="RdYlGn"
+)
+
+st.plotly_chart(fig_matrix, use_container_width=True)
+
+st.markdown("---")
 
 
 
