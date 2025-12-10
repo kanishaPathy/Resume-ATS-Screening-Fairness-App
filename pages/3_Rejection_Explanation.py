@@ -325,6 +325,18 @@ with right_col:
     st.write(f"**Word Count ({word_count})**")
     st.progress(min(1.0, word_count / 900))
 
+# Prepare values for PDF export
+key_features = {
+    "skill_count": skill_count,
+    "designation_count": designation_count,
+    "education_count": education_count,
+    "certification_count": certification_count,
+    "word_count": word_count,
+    "ATS_score": ats_score
+}
+
+top_negative_factors = worst_features
+
 
 # =============================================================
 # PDF Export (Professional Format)
@@ -402,6 +414,7 @@ else:
         )
 
 st.success("🎯 Your personalized ATS report has been successfully generated!")
+
 
 
 
