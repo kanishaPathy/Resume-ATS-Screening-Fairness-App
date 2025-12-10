@@ -329,7 +329,6 @@ with right_col:
 # =============================================================
 # PDF Export
 # =============================================================
-
 st.markdown("---")
 st.markdown("### 📄 Download ATS Report")
 
@@ -344,14 +343,9 @@ else:
 
         pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
 
-        # Wrap text so Unicode is replaced instead of crashing
-        def safe_text(t):
-            return t.encode("latin-1", "replace").decode("latin-1")
-
-        pdf.multi_cell(0, 7, safe_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
-        pdf.multi_cell(0, 7, safe_text(f"Category: {category}"))
-        pdf.multi_cell(0, 7, safe_text(f"Strength Score: {base_score}/100"))
-
+        pdf.multi_cell(0, 7, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
+        pdf.multi_cell(0, 7, f"Category: {category}")
+        pdf.multi_cell(0, 7, f"Strength Score: {base_score}/100")
         pdf.ln(5)
 
         pdf.set_font("Arial", "B", 12)
@@ -359,10 +353,9 @@ else:
         pdf.set_font("Arial", size=11)
 
         for i in checklist_warn:
-            pdf.multi_cell(0, 6, f"- {safe_text(i)}")
+            pdf.multi_cell(0, 6, f"- {i}")
 
-        # Crucial: encode with 'replace' to prevent UnicodeEncodeError
-        pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
+        pdf_bytes = pdf.output(dest="S").encode("latin-1")
 
         st.download_button(
             "⬇ Download PDF",
@@ -370,7 +363,9 @@ else:
             file_name="ATS_Resume_Report.pdf",
             mime="application/pdf"
         )
+
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
 
 
 
