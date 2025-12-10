@@ -343,39 +343,35 @@ else:
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
-        # Title
         pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
 
-        # Safe encoding wrapper
         def safe_text(t):
             return t.encode("latin-1", "replace").decode("latin-1")
 
-        # Summary section
         pdf.multi_cell(0, 7, safe_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
         pdf.multi_cell(0, 7, safe_text(f"Category: {category}"))
         pdf.multi_cell(0, 7, safe_text(f"Strength Score: {base_score}/100"))
         pdf.ln(5)
 
-        # Section heading
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 8, "Recommended Improvements:", ln=1)
-        
         pdf.set_font("Arial", size=11)
 
-        # Format and print bullet recommendations
         for i in checklist_warn:
-            # Remove markdown bold formatting (**text** → text)
-            clean_item = re.sub(r"\*\*(.*?)\*\*", r"\1", i)
 
-            # Split compound lines like "A:- B"
-            parts = clean_item.split(":-")
+            # Step 1 — remove markdown symbols (**text** → text)
+            i = re.sub(r"\*\*(.*?)\*\*", r"\1", i)
 
-            for p in parts:
-                formatted = safe_text(p.strip())
-                pdf.multi_cell(0, 6, f"- {formatted}")
-                pdf.ln(1)
+            # Step 2 — split bullets properly: newline OR dash
+            sub_items = re.split(r"\n| - | -|- ", i)
 
-        # Encode safely to avoid UnicodeEncodeError
+            for sub in sub_items:
+                cleaned = sub.strip()
+                if cleaned:  # avoid blanks
+                    cleaned = safe_text(cleaned)
+                    pdf.multi_cell(0, 6, f"- {cleaned}")
+                    pdf.ln(1)
+
         pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
         st.download_button(
@@ -386,6 +382,8 @@ else:
         )
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
+
 
 
 
