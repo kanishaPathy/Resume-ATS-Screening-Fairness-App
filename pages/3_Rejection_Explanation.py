@@ -332,37 +332,46 @@ with right_col:
 st.markdown("---")
 st.markdown("### 📄 Download ATS Report")
 
-if not FPDF_AVAILABLE:
-    st.info("Install `fpdf` to enable PDF download.")
-else:
-    if st.button("📥 Generate PDF"):
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
 
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
+buffer = BytesIO()
+p = canvas.Canvas(buffer, pagesize=letter)
 
-        pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
+x, y = 30, 750
+p.drawString(x, y, "ATS Resume Analysis Report")
 
-        pdf.multi_cell(0, 7, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
-        pdf.multi_cell(0, 7, f"Category: {category}")
-        pdf.multi_cell(0, 7, f"Strength Score: {base_score}/100")
-        pdf.ln(5)
+y -= 20
+p.drawString(x, y, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
+y -= 20
+p.drawString(x, y, f"Category: {category}")
+y -= 20
+p.drawString(x, y, f"Strength Score: {base_score}/100")
 
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Recommended Improvements:", ln=1)
-        pdf.set_font("Arial", size=11)
+y -= 30
+p.drawString(x, y, "Recommended Improvements:")
 
-        for i in checklist_warn:
-            pdf.multi_cell(0, 6, f"- {i}")
+for item in checklist_warn:
+    y -= 15
+    if y < 50:
+        p.showPage()
+        y = 750
+        p.drawString(x, y, "Recommended Improvements (cont.):")
+        y -= 20
+    p.drawString(x, y, f"- {item}")
 
-        pdf_bytes = pdf.output(dest="S").encode("latin-1")
+p.save()
+pdf_bytes = buffer.getvalue()
+buffer.close()
 
-        st.download_button(
-            "⬇ Download PDF",
-            data=pdf_bytes,
-            file_name="ATS_Resume_Report.pdf",
-            mime="application/pdf"
-        )
+st.download_button(
+    "⬇ Download PDF",
+    data=pdf_bytes,
+    file_name="ATS_Resume_Report.pdf",
+    mime="application/pdf"
+)
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
 
