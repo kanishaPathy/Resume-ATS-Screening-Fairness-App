@@ -343,35 +343,38 @@ else:
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
-        pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
+        # Helper: strip markdown + make text latin-1 safe
+        def clean_for_pdf(text):
+            text = str(text)
+            # remove **bold** markdown
+            text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+            # ensure latin-1 safe (no UnicodeEncodeError)
+            return text.encode("latin-1", "replace").decode("latin-1")
 
-        def safe_text(t):
-            return t.encode("latin-1", "replace").decode("latin-1")
+        # Title
+        pdf.cell(0, 10, clean_for_pdf("ATS Resume Analysis Report"), ln=1)
 
-        pdf.multi_cell(0, 7, safe_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
-        pdf.multi_cell(0, 7, safe_text(f"Category: {category}"))
-        pdf.multi_cell(0, 7, safe_text(f"Strength Score: {base_score}/100"))
+        # Summary
+        pdf.multi_cell(0, 7, clean_for_pdf(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
+        pdf.multi_cell(0, 7, clean_for_pdf(f"Category: {category}"))
+        pdf.multi_cell(0, 7, clean_for_pdf(f"Strength Score: {base_score}/100"))
         pdf.ln(5)
 
+        # Heading
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Recommended Improvements:", ln=1)
+        pdf.cell(0, 8, clean_for_pdf("Recommended Improvements:"), ln=1)
         pdf.set_font("Arial", size=11)
+        pdf.ln(2)
 
+        # Each checklist item on its own line
         for i in checklist_warn:
+            txt = clean_for_pdf(i).strip()
+            if not txt:
+                continue
+            pdf.multi_cell(0, 6, f"- {txt}")
+            pdf.ln(1)
 
-            # Step 1 — remove markdown symbols (**text** → text)
-            i = re.sub(r"\*\*(.*?)\*\*", r"\1", i)
-
-            # Step 2 — split bullets properly: newline OR dash
-            sub_items = re.split(r"\n| - | -|- ", i)
-
-            for sub in sub_items:
-                cleaned = sub.strip()
-                if cleaned:  # avoid blanks
-                    cleaned = safe_text(cleaned)
-                    pdf.multi_cell(0, 6, f"- {cleaned}")
-                    pdf.ln(1)
-
+        # IMPORTANT: 'replace' avoids UnicodeEncodeError
         pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
         st.download_button(
@@ -382,6 +385,8 @@ else:
         )
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
+
 
 
 
