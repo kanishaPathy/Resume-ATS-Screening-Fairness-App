@@ -329,49 +329,42 @@ with right_col:
 # =============================================================
 # PDF Export
 # =============================================================
+from fpdf import FPDF
+
 st.markdown("---")
 st.markdown("### 📄 Download ATS Report")
 
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from io import BytesIO
+if st.button("📥 Generate PDF"):
+    
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
 
-buffer = BytesIO()
-p = canvas.Canvas(buffer, pagesize=letter)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
 
-x, y = 30, 750
-p.drawString(x, y, "ATS Resume Analysis Report")
+    pdf.multi_cell(0, 7, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
+    pdf.multi_cell(0, 7, f"Category: {category}")
+    pdf.multi_cell(0, 7, f"Strength Score: {base_score}/100")
 
-y -= 20
-p.drawString(x, y, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
-y -= 20
-p.drawString(x, y, f"Category: {category}")
-y -= 20
-p.drawString(x, y, f"Strength Score: {base_score}/100")
+    pdf.ln(5)
+    pdf.set_font("Arial", "B", size=12)
+    pdf.cell(0, 8, "Recommended Improvements:", ln=1)
 
-y -= 30
-p.drawString(x, y, "Recommended Improvements:")
+    pdf.set_font("Arial", size=11)
+    for item in checklist_warn:
+        safe_text = item.encode("latin-1", "replace").decode("latin-1")
+        pdf.multi_cell(0, 6, f"- {safe_text}")
 
-for item in checklist_warn:
-    y -= 15
-    if y < 50:
-        p.showPage()
-        y = 750
-        p.drawString(x, y, "Recommended Improvements (cont.):")
-        y -= 20
-    p.drawString(x, y, f"- {item}")
+    pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
-p.save()
-pdf_bytes = buffer.getvalue()
-buffer.close()
-
-st.download_button(
-    "⬇ Download PDF",
-    data=pdf_bytes,
-    file_name="ATS_Resume_Report.pdf",
-    mime="application/pdf"
-)
-
+    st.download_button(
+        "⬇ Download PDF",
+        data=pdf_bytes,
+        file_name="ATS_Resume_Report.pdf",
+        mime="application/pdf"
+    )
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
 
 
