@@ -343,38 +343,44 @@ else:
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
-        # Helper: strip markdown + make text latin-1 safe
+        # Helper: clean markdown + ensure encoding safe
         def clean_for_pdf(text):
             text = str(text)
-            # remove **bold** markdown
-            text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
-            # ensure latin-1 safe (no UnicodeEncodeError)
+            text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)   # remove markdown bold markers
             return text.encode("latin-1", "replace").decode("latin-1")
 
         # Title
         pdf.cell(0, 10, clean_for_pdf("ATS Resume Analysis Report"), ln=1)
 
-        # Summary
+        # Summary fields
         pdf.multi_cell(0, 7, clean_for_pdf(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
         pdf.multi_cell(0, 7, clean_for_pdf(f"Category: {category}"))
-        pdf.multi_cell(0, 7, clean_for_pdf(f"Strength Score: {base_score}/100"))
+        pdf.multi_cell(0, 7, clean_for_pdf(f"Resume Strength Score: {base_score}/100"))
         pdf.ln(5)
 
-        # Heading
+        # Header for improvement section
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 8, clean_for_pdf("Recommended Improvements:"), ln=1)
-        pdf.set_font("Arial", size=11)
         pdf.ln(2)
 
-        # Each checklist item on its own line
-        for i in checklist_warn:
-            txt = clean_for_pdf(i).strip()
-            if not txt:
-                continue
-            pdf.multi_cell(0, 6, f"- {txt}")
-            pdf.ln(1)
+        pdf.set_font("Arial", size=11)
 
-        # IMPORTANT: 'replace' avoids UnicodeEncodeError
+        # Checklist formatting + splitting bullets
+        for item in checklist_warn:
+            cleaned_item = clean_for_pdf(item).strip()
+            if not cleaned_item:
+                continue
+            
+            # Split internal bullets (dash, newline, etc.)
+            sub_parts = re.split(r"[-•\n]+", cleaned_item)
+
+            for part in sub_parts:
+                line = part.strip()
+                if line:
+                    pdf.multi_cell(0, 6, f"- {line}")
+                    pdf.ln(1)
+
+        # Prevent Unicode crash
         pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
         st.download_button(
@@ -385,6 +391,8 @@ else:
         )
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
+
 
 
 
