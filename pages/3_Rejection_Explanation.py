@@ -329,42 +329,49 @@ with right_col:
 # =============================================================
 # PDF Export
 # =============================================================
-from fpdf import FPDF
 
 st.markdown("---")
 st.markdown("### 📄 Download ATS Report")
 
-if st.button("📥 Generate PDF"):
-    
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
+if not FPDF_AVAILABLE:
+    st.info("Install `fpdf` to enable PDF download.")
+else:
+    if st.button("📥 Generate PDF"):
 
-    pdf.set_font("Arial", size=12)
-    pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
 
-    pdf.multi_cell(0, 7, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
-    pdf.multi_cell(0, 7, f"Category: {category}")
-    pdf.multi_cell(0, 7, f"Strength Score: {base_score}/100")
+        pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
 
-    pdf.ln(5)
-    pdf.set_font("Arial", "B", size=12)
-    pdf.cell(0, 8, "Recommended Improvements:", ln=1)
+        # Wrap text so Unicode is replaced instead of crashing
+        def safe_text(t):
+            return t.encode("latin-1", "replace").decode("latin-1")
 
-    pdf.set_font("Arial", size=11)
-    for item in checklist_warn:
-        safe_text = item.encode("latin-1", "replace").decode("latin-1")
-        pdf.multi_cell(0, 6, f"- {safe_text}")
+        pdf.multi_cell(0, 7, safe_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
+        pdf.multi_cell(0, 7, safe_text(f"Category: {category}"))
+        pdf.multi_cell(0, 7, safe_text(f"Strength Score: {base_score}/100"))
 
-    pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
+        pdf.ln(5)
 
-    st.download_button(
-        "⬇ Download PDF",
-        data=pdf_bytes,
-        file_name="ATS_Resume_Report.pdf",
-        mime="application/pdf"
-    )
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "Recommended Improvements:", ln=1)
+        pdf.set_font("Arial", size=11)
+
+        for i in checklist_warn:
+            pdf.multi_cell(0, 6, f"- {safe_text(i)}")
+
+        # Crucial: encode with 'replace' to prevent UnicodeEncodeError
+        pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
+
+        st.download_button(
+            "⬇ Download PDF",
+            data=pdf_bytes,
+            file_name="ATS_Resume_Report.pdf",
+            mime="application/pdf"
+        )
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
 
 
 
