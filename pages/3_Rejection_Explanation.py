@@ -353,9 +353,11 @@ else:
         pdf.set_font("Arial", size=11)
 
         for i in checklist_warn:
-            pdf.multi_cell(0, 6, f"- {i}")
+            safe_i = i.encode("latin-1", "replace").decode("latin-1")
+            pdf.multi_cell(0, 6, f"- {safe_i}")
+        
+        pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
-        pdf_bytes = pdf.output(dest="S").encode("latin-1")
 
         st.download_button(
             "⬇ Download PDF",
@@ -365,6 +367,7 @@ else:
         )
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
 
 
 
