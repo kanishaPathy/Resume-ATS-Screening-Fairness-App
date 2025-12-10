@@ -329,8 +329,18 @@ with right_col:
 # =============================================================
 # PDF Export
 # =============================================================
+import re
+import unicodedata
+
 st.markdown("---")
 st.markdown("### 📄 Download ATS Report")
+
+# Normalize dangerous unicode to safe ascii
+def normalize_text(text):
+    text = unicodedata.normalize("NFKD", str(text))
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)  # remove bold markdown (**text**)
+    return text
 
 if not FPDF_AVAILABLE:
     st.info("Install `fpdf` to enable PDF download.")
@@ -341,26 +351,44 @@ else:
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
+        # Title
         pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
 
-        # SAFE handling for text
-        def safe_text(t):
-            return t.encode("latin-1", "replace").decode("latin-1")
-
-        pdf.multi_cell(0, 7, safe_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
-        pdf.multi_cell(0, 7, safe_text(f"Category: {category}"))
-        pdf.multi_cell(0, 7, safe_text(f"Strength Score: {base_score}/100"))
+        # Summary
+        pdf.multi_cell(0, 7, normalize_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
+        pdf.multi_cell(0, 7, normalize_text(f"Category: {category}"))
+        pdf.multi_cell(0, 7, normalize_text(f"Resume Strength Score: {base_score}/100"))
         pdf.ln(5)
 
+        # 👉 Key ATS features section
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "Key ATS Features:", ln=1)
+        pdf.set_font("Arial", size=11)
+
+        for k, v in key_features.items():  # <<== You must pass your data here
+            pdf.multi_cell(0, 6, f"- {normalize_text(k)}: {normalize_text(v)}")
+        pdf.ln(5)
+
+        # 👉 Top Negative SHAP Factors section
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "Top Negative Factors (SHAP):", ln=1)
+        pdf.set_font("Arial", size=11)
+
+        for factor in top_negative_factors:  # <<== list of SHAP features
+            pdf.multi_cell(0, 6, f"- {normalize_text(factor)}")
+        pdf.ln(5)
+
+        # 👉 Recommended Improvements section
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 8, "Recommended Improvements:", ln=1)
+        pdf.ln(2)
         pdf.set_font("Arial", size=11)
 
         for i in checklist_warn:
-            safe_i = safe_text(i)  # sanitize here
-            pdf.multi_cell(0, 6, f"- {safe_i}")
+            pdf.multi_cell(0, 6, f"- {normalize_text(i)}")
+            pdf.ln(1)
 
-        # FIX here
+        # Encoding safe output
         pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
         st.download_button(
@@ -371,6 +399,8 @@ else:
         )
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
+
 
 
 
