@@ -329,6 +329,8 @@ with right_col:
 # =============================================================
 # PDF Export
 # =============================================================
+import re
+
 st.markdown("---")
 st.markdown("### 📄 Download ATS Report")
 
@@ -341,23 +343,40 @@ else:
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
+        # Title
         pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
 
-        pdf.multi_cell(0, 7, f"Prediction: {'Strong' if pred_class==1 else 'Weak'}")
-        pdf.multi_cell(0, 7, f"Category: {category}")
-        pdf.multi_cell(0, 7, f"Strength Score: {base_score}/100")
+        # Safe encoding wrapper
+        def safe_text(t):
+            return t.encode("latin-1", "replace").decode("latin-1")
+
+        # Summary section
+        pdf.multi_cell(0, 7, safe_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
+        pdf.multi_cell(0, 7, safe_text(f"Category: {category}"))
+        pdf.multi_cell(0, 7, safe_text(f"Strength Score: {base_score}/100"))
         pdf.ln(5)
 
+        # Section heading
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 8, "Recommended Improvements:", ln=1)
+        
         pdf.set_font("Arial", size=11)
 
+        # Format and print bullet recommendations
         for i in checklist_warn:
-            safe_i = i.encode("latin-1", "replace").decode("latin-1")
-            pdf.multi_cell(0, 6, f"- {safe_i}")
-        
-        pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
+            # Remove markdown bold formatting (**text** → text)
+            clean_item = re.sub(r"\*\*(.*?)\*\*", r"\1", i)
 
+            # Split compound lines like "A:- B"
+            parts = clean_item.split(":-")
+
+            for p in parts:
+                formatted = safe_text(p.strip())
+                pdf.multi_cell(0, 6, f"- {formatted}")
+                pdf.ln(1)
+
+        # Encode safely to avoid UnicodeEncodeError
+        pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
         st.download_button(
             "⬇ Download PDF",
@@ -367,6 +386,8 @@ else:
         )
 
 st.success("🎯 Improvements applied will significantly increase your ATS score & model confidence.")
+
+
 
 
 
