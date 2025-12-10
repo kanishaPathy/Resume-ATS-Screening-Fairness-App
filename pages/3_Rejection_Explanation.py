@@ -339,19 +339,18 @@ top_negative_factors = worst_features
 
 
 # =============================================================
-# PDF Export (Professional Format)
+# PDF Export (Fixed Unicode Crash)
 # =============================================================
 import re
 import unicodedata
 
 st.markdown("---")
-st.markdown("### 📄 Download ATS Report (PDF Export)")
+st.markdown("### 📄 Download ATS Report")
 
-# Normalize text safely
 def normalize_text(text):
     text = unicodedata.normalize("NFKD", str(text))
     text = text.encode("ascii", "ignore").decode("ascii")
-    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)  # remove markdown bold markers
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     return text
 
 if not FPDF_AVAILABLE:
@@ -363,47 +362,46 @@ else:
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
 
-        # Header Styling
         pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "ATS Resume Analysis Report", ln=1)
+        pdf.cell(0, 10, normalize_text("ATS Resume Analysis Report"), ln=1)
         pdf.ln(5)
 
-        # Resume Summary
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Resume Summary", ln=1)
+        pdf.cell(0, 8, normalize_text("Resume Summary"), ln=1)
+
         pdf.set_font("Arial", size=11)
-        pdf.multi_cell(0, 7, f"Prediction: {normalize_text('Strong' if pred_class==1 else 'Weak')}")
-        pdf.multi_cell(0, 7, f"Category: {normalize_text(category)}")
-        pdf.multi_cell(0, 7, f"Resume Strength Score: {base_score}/100")
+        pdf.multi_cell(0, 7, normalize_text(f"Prediction: {'Strong' if pred_class==1 else 'Weak'}"))
+        pdf.multi_cell(0, 7, normalize_text(f"Category: {category}"))
+        pdf.multi_cell(0, 7, normalize_text(f"Resume Strength Score: {base_score}/100"))
         pdf.ln(5)
 
-        # Key ATS Features
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Key ATS Features", ln=1)
+        pdf.cell(0, 8, normalize_text("Key ATS Features"), ln=1)
+
         pdf.set_font("Arial", size=11)
         for k, v in key_features.items():
-            pdf.multi_cell(0, 6, f"• {normalize_text(k)}: {normalize_text(v)}")
+            pdf.multi_cell(0, 6, normalize_text(f"• {k}: {v}"))
+
         pdf.ln(5)
 
-        # Top Negative SHAP Factors
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Top Negative Factors (SHAP)", ln=1)
+        pdf.cell(0, 8, normalize_text("Top Negative Factors (SHAP)"), ln=1)
+
         pdf.set_font("Arial", size=11)
         for factor in top_negative_factors:
-            pdf.multi_cell(0, 6, f"• {normalize_text(factor)}")
+            pdf.multi_cell(0, 6, normalize_text(f"• {factor}"))
         pdf.ln(5)
 
-        # Recommendations Section
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Recommended Improvements", ln=1)
+        pdf.cell(0, 8, normalize_text("Recommended Improvements"), ln=1)
         pdf.set_font("Arial", size=11)
         pdf.ln(2)
 
-        for rec in checklist_warn:
-            pdf.multi_cell(0, 6, f"- {normalize_text(rec)}")
+        for i in checklist_warn:
+            pdf.multi_cell(0, 6, normalize_text(f"- {i}"))
             pdf.ln(1)
 
-        # Encoding-safe output
+        # The internal crash is avoided because ALL text is sanitized BEFORE writing
         pdf_bytes = pdf.output(dest="S").encode("latin-1", "replace")
 
         st.download_button(
@@ -413,14 +411,7 @@ else:
             mime="application/pdf"
         )
 
-st.success("🎯 Your personalized ATS report has been successfully generated!")
-
-
-
-
-
-
-
+st.success("🎯 Your personalized ATS PDF report was generated successfully!")
 
 
 
